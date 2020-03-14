@@ -24,7 +24,7 @@ const importData = async () => {
   // const bootcamps = JSON.parse(
   //   fs.readFileSync(`${__dirname}/data/bootcamps.js`, "utf-8")
   // );
-
+  // text
   try {
     let data = new Bootcamp({
       name: "Devworks Bootcamp",
