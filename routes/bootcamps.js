@@ -1,23 +1,20 @@
 const express = require("express");
 const router = express.Router();
-const Bootcamp = require("../models/Bootcamp");
+
+const courseRouter = require("./courses");
 
 const {
   getAllBootcamps,
   getBootcamp,
   createBootcamp,
   updateBootcamp,
-  deleteBootcamp
+  deleteBootcamp,
+  getBootcampsInRadius
 } = require("../controller/bootcamps");
 
-// router.get("/", async (req, res, next) => {
-//   try {
-//     const bootcamps = await Bootcamp.find();
-//     res.send(bootcamps);
-//   } catch (error) {}
-// });
+router.use("/:id/courses", courseRouter);
 router.get("/", getAllBootcamps);
-
+router.get("/:radius/:zipcode/:distance", getBootcampsInRadius);
 router.get("/:id", getBootcamp);
 router.post("/", createBootcamp);
 router.put("/:id", updateBootcamp);
