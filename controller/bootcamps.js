@@ -1,7 +1,9 @@
 const Bootcamp = require("../models/Bootcamp");
+const Course = require('../models/Course')
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/asyncHandler");
 const geocoder = require("../utils/geoCoder");
+const path = require('path')
 
 //@desc    Get all bootcamps
 //@route   GET /api/v1/bootcamps
@@ -53,16 +55,17 @@ module.exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
 //@access   Private
 module.exports.createBootcamp = asyncHandler(async (req, res, next) => {
   let bootcamp = new Bootcamp({
-    name: req.body.name,
-    description: req.body.description,
-    website: req.body.website,
-    phone: req.body.phone,
-    email: req.body.email,
-    address: req.body.address,
-    careers: req.body.careers,
-    housing: req.body.housing,
-    jobAssistance: req.body.jobAssistance,
-    acceptGi: req.body.acceptGi
+    // name: req.body.name,
+    // description: req.body.description,
+    // website: req.body.website,
+    // phone: req.body.phone,
+    // email: req.body.email,
+    // address: req.body.address,
+    // careers: req.body.careers,
+    // housing: req.body.housing,
+    // jobAssistance: req.body.jobAssistance,
+    // acceptGi: req.body.acceptGi
+    ...req.body
   });
   bootcamp = await bootcamp.save();
 
@@ -91,11 +94,17 @@ module.exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 //@route   DELETE /api/v1/bootcamps/:id
 //@access  Private
 module.exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndRemove(req.params.id);
+  const bootcamp = await Bootcamp.findById(req.params.id);
   if (!bootcamp)
     return res
       .status(404)
-      .send({ success: false, code: 404, message: "not found" });
+      .send({ success: false, code: 404, message: "bootcamp not found" });
+
+  const courses = await Course.deleteMany({ bootcamp: bootcamp._id });
+  console.log(courses)
+
+
+  bootcamp.remove();
   res.status(200).send({
     success: true,
     code: 200,
@@ -103,3 +112,21 @@ module.exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
     data: bootcamp
   });
 });
+
+//@desc    upload photo for bootcamps
+//@route   PUT /api/v1/bootcamps/:id/photo
+//@access  Private
+module.exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
+  const bootcamp = await Bootcamp.findById(req.params.id);
+  if (!bootcamp)
+    return res.status(404).send({ success: false, code: 404, message: "bootcamp not found" });
+  const fileName = req.file.fileName;
+  await Bootcamp.findByIdAndUpdate(req.params.id, { photo: fileName }, {
+    new: true,
+    runValidators: true
+  });
+
+  res
+    .status(200)
+    .send({ success: true, code: 200, data: bootcamp });
+})

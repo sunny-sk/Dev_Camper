@@ -1,4 +1,5 @@
 const Course = require("../models/Course");
+const Bootcamp = require('../models/Bootcamp');
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/asyncHandler");
 
@@ -38,9 +39,16 @@ module.exports.getCourse = asyncHandler(async (req, res, next) => {
 });
 
 //@desc     Create  courses
-//@route    POST /api/v1/courses
+//@route    POST /api/v1/bootcamps/:id/courses
 //@access   Private
 module.exports.createCourse = asyncHandler(async (req, res, next) => {
+
+  const bootcamp = await Bootcamp.findById(req.params.id);
+  if (!bootcamp) return res.status(404)
+    .send({
+      success: false, code: 404, message: "bootcamp doesn't exists with this id"
+    });
+
   let course = new Course({
     title: req.body.title,
     description: req.body.description,
@@ -49,13 +57,14 @@ module.exports.createCourse = asyncHandler(async (req, res, next) => {
     tuition: req.body.tuition,
     minimumSkill: req.body.minimumSkill,
     scholarhipsAvailable: req.body.scholarhipsAvailable,
-    bootcamp: req.body.bootcamp
+    bootcamp: req.params.id
+    // ...req.body
   });
   course = await course.save();
 
   res
     .status(201)
-    .send({ success: true, message: "created new bootcamp", data: course });
+    .send({ success: true, message: "created new course", data: course });
 });
 
 //@desc    update  courses
@@ -74,19 +83,22 @@ module.exports.updateCourse = asyncHandler(async (req, res, next) => {
   res.status(200).send({ success: true, code: 200, data: course });
 });
 
+
 //@desc    delete  courses
 //@route   DELETE /api/v1/courses/:id
 //@access  Private
 module.exports.deleteCourse = asyncHandler(async (req, res, next) => {
   const course = await Course.findByIdAndRemove(req.params.id);
-  if (!bootcamp)
+
+  if (!course)
     return res
       .status(404)
-      .send({ success: false, code: 404, message: "not found" });
+      .send({ success: false, code: 404, message: "course not found" });
+
   res.status(200).send({
     success: true,
     code: 200,
     message: "course deleted successfully",
-    data: bootcamp
+    data: course
   });
 });
