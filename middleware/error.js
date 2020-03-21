@@ -8,7 +8,7 @@ const errorHandler = (err, req, res, next) => {
   };
   //
 
-  // console.log(err.name)
+  console.log(err)
 
   //token invalid
   if (err.name === 'JsonWebTokenError') {

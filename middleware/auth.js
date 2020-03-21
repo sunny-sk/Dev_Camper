@@ -12,13 +12,12 @@ const protect = asyncHandler(async (req, res, next) => {
       .send({ success: false, code: 401, message: "missing auth token // Access Denied" });
   }
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
   const _user = await User.findById(decoded._id);
-  if (!_user)
+  if (!_user) {
     return res
-      .send(401)
+      .status(401)
       .send({ success: false, code: 401, message: "invalid user id in token // Access Denied" });
-
+  }
   req.user = _user
   next();
 })

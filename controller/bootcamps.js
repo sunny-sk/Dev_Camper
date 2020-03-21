@@ -54,18 +54,23 @@ module.exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
 //@route    POST /api/v1/bootcamps
 //@access   Private
 module.exports.createBootcamp = asyncHandler(async (req, res, next) => {
+
+  const publishedBootcamp = await Bootcamp.findOne({ user: req.user._id })
+  if (publishedBootcamp && req.user.role !== 'admin') {
+    return res.status(400).status({ success: true, code: 400, message: `you can add only one Bootcamp with this id ${req.user._id}` })
+  }
   let bootcamp = new Bootcamp({
-    // name: req.body.name,
-    // description: req.body.description,
-    // website: req.body.website,
-    // phone: req.body.phone,
-    // email: req.body.email,
-    // address: req.body.address,
-    // careers: req.body.careers,
-    // housing: req.body.housing,
-    // jobAssistance: req.body.jobAssistance,
-    // acceptGi: req.body.acceptGi
-    ...req.body
+    name: req.body.name,
+    description: req.body.description,
+    website: req.body.website,
+    phone: req.body.phone,
+    email: req.body.email,
+    address: req.body.address,
+    careers: req.body.careers,
+    housing: req.body.housing,
+    jobAssistance: req.body.jobAssistance,
+    acceptGi: req.body.acceptGi,
+    user: req.user._id
   });
   bootcamp = await bootcamp.save();
 
@@ -78,14 +83,21 @@ module.exports.createBootcamp = asyncHandler(async (req, res, next) => {
 //@route   PUT /api/v1/bootcamps/:id
 //@access  Public
 module.exports.updateBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
+  let bootcamp = await Bootcamp.findById(req.params.id, req.body)
   if (!bootcamp)
     return res
       .status(404)
       .send({ success: false, code: 404, message: "not found" });
+
+  //make sure that user is bootcamp owner
+  if (bootcamp.user.toSring() !== req.user.id && req.user.role !== 'admin') {
+    return res.status(401).send({ success: true, code: 401, message: 'nt authorized to update thid bootcamp' });
+  }
+
+  bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true
+  });
 
   res.status(200).send({ success: true, code: 200, data: bootcamp });
 });

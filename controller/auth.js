@@ -39,12 +39,11 @@ module.exports.registerUser = asyncHandler(async (req, res, next) => {
 //@route   GET /api/v1/auth/login
 //@access  Public
 module.exports.loginUser = asyncHandler(async (req, res, next) => {
-
+  console.log('in login')
   const { email, password } = req.body
-  if (!email || !password)
+  if (!email || !password) {
     return next(new ErrorResponse('Please provide an email and password', 400))
-
-
+  }
   let user = await User.findOne({ email: req.body.email })
   if (!user)
     return res.status(400).send({
@@ -79,4 +78,51 @@ module.exports.loginUser = asyncHandler(async (req, res, next) => {
 module.exports.currentUser = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user._id).select("-password");
   res.send({ success: true, code: 200, user });
+})
+//@desc    forgot Password
+//@route   POST /api/v1/auth/forgotpassword
+//@access  Public
+module.exports.forgotPassword = asyncHandler(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email })
+  if (!user) {
+    res.status(404).send({ succuss: false, code: 404, message: `there is no user with this ${req.body.email}` })
+  }
+
+  const token = User.generateAuthToken()
+  console.log(token)
+  res.send({ success: true, code: 200, user });
+})
+//@desc    change password
+//@route   POST /api/v1/auth/changePassword
+//@access  Public
+module.exports.resetPassword = asyncHandler(async (req, res, next) => {
+  if (!req.body.oldPassword || !req.body.newPassword) {
+    return res.status(400).send({ success: false, code: 400, message: ' please add oldPassword field and newPassword field' })
+  } else if (req.body.oldPassword.length < 6 || req.body.newPassword.length < 6) {
+    return res.status(400).send({ success: false, code: 400, message: 'oldPassword ,newPassword length of atleast 6 characters ' })
+  }
+  console.log(req.user._id)
+  let user = await User.findById(req.user._id);
+  if (!user)
+    return res
+      .status(400)
+      .send({ success: false, code: 400, message: "invalid user Id" });
+
+  const validPassword = await bcrypt.compare(
+    req.body.oldPassword,
+    user.password
+  );
+  if (!validPassword)
+    return res
+      .status(400)
+      .send({ success: false, code: 400, message: "incorrect old password" });
+
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(req.body.newPassword, salt);
+  await user.save();
+  res.status(200).send({
+    success: true,
+    code: 200,
+    message: "password updated successfully"
+  });
 })
