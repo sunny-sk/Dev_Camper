@@ -19,9 +19,9 @@ mongoose.set("useFindAndModify", false);
 mongoose.set("useCreateIndex", true);
 mongoose.set("useUnifiedTopology", true);
 
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
+// if (process.env.NODE_ENV === "development") {
+app.use(morgan("dev"));
+// }
 
 const bootcamps = require("./routes/bootcamps");
 const courses = require("./routes/courses");

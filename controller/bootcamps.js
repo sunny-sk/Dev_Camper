@@ -54,11 +54,11 @@ module.exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
 //@route    POST /api/v1/bootcamps
 //@access   Private
 module.exports.createBootcamp = asyncHandler(async (req, res, next) => {
-
-  const publishedBootcamp = await Bootcamp.findOne({ user: req.user._id })
+  const publishedBootcamp = await Bootcamp.find({ user: req.user._id })
   if (publishedBootcamp && req.user.role !== 'admin') {
     return res.status(400).status({ success: true, code: 400, message: `you can add only one Bootcamp with this id ${req.user._id}` })
   }
+
   let bootcamp = new Bootcamp({
     name: req.body.name,
     description: req.body.description,
