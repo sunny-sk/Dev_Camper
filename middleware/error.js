@@ -8,13 +8,20 @@ const errorHandler = (err, req, res, next) => {
   };
   //
 
-  console.log(err);
+  // console.log(err.name)
+
+  //token invalid
+  if (err.name === 'JsonWebTokenError') {
+    error.success = false;
+    error.code = 401;
+    error.message = "Invalid Token";
+  }
 
   //duplicate key error
   if (err.name === "MongoError") {
     error.success = false;
     error.code = 400;
-    error.message = "name : duplicate key error";
+    error.message = " duplicate key error";
   }
 
   //validation error
