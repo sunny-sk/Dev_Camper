@@ -49,6 +49,18 @@ module.exports.createCourse = asyncHandler(async (req, res, next) => {
       success: false, code: 404, message: "bootcamp doesn't exists with this id"
     });
 
+  // make sure user is bootcamp owner
+  const x = bootcamp.user.toString();
+  const y = req.user._id.toString();
+
+  if (x !== y && req.user.role.toString() !== 'admin') {
+    return res.status(401).send({ success: false, code: 401, message: `${req.user._id} not authorize to add a course to bootcamp ${req.params.id}` })
+  }
+
+
+
+
+
   let course = new Course({
     title: req.body.title,
     description: req.body.description,
@@ -57,7 +69,8 @@ module.exports.createCourse = asyncHandler(async (req, res, next) => {
     tuition: req.body.tuition,
     minimumSkill: req.body.minimumSkill,
     scholarhipsAvailable: req.body.scholarhipsAvailable,
-    bootcamp: req.params.id
+    bootcamp: req.params.id,
+    user: req.user._id
     // ...req.body
   });
   course = await course.save();
@@ -71,14 +84,26 @@ module.exports.createCourse = asyncHandler(async (req, res, next) => {
 //@route   PUT /api/v1/courses/:id
 //@access  Public
 module.exports.updateCourse = asyncHandler(async (req, res, next) => {
-  const course = await Course.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
+
+  let course = await Course.findById(req.params.id)
   if (!course)
     return res
       .status(404)
       .send({ success: false, code: 404, message: "not found" });
+
+
+  const x = course.user.toString();
+  const y = req.user._id.toString();
+
+  if (x !== y && req.user.role.toString() !== 'admin') {
+    return res.status(401).send({ success: false, code: 401, message: `${req.user._id} not authorize to update a course to bootcamp ${req.params.id}` })
+  }
+
+
+  course = await Course.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true
+  });
 
   res.status(200).send({ success: true, code: 200, data: course });
 });
@@ -88,12 +113,22 @@ module.exports.updateCourse = asyncHandler(async (req, res, next) => {
 //@route   DELETE /api/v1/courses/:id
 //@access  Private
 module.exports.deleteCourse = asyncHandler(async (req, res, next) => {
-  const course = await Course.findByIdAndRemove(req.params.id);
+  let course = await Course.findById(req.params.id);
 
   if (!course)
     return res
       .status(404)
       .send({ success: false, code: 404, message: "course not found" });
+
+  const x = course.user.toString();
+  const y = req.user._id.toString();
+
+  if (x !== y && req.user.role.toString() !== 'admin') {
+    return res.status(401).send({ success: false, code: 401, message: `${req.user._id} not authorize to delete a course to bootcamp ${req.params.id}` })
+  }
+
+  course = await Course.findByIdAndRemove(req.params.id)
+
 
   res.status(200).send({
     success: true,

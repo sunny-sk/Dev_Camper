@@ -15,6 +15,7 @@ module.exports.getAllBootcamps = asyncHandler(async (req, res, next) => {
     .send({ success: true, code: 200, count: bootcamps.length, bootcamps });
 });
 
+
 //@desc    Get single bootcamp
 //@route   GET /api/v1/bootcamps/:id
 //@access  Public
@@ -27,6 +28,8 @@ module.exports.getBootcamp = asyncHandler(async (req, res, next) => {
   }
   res.status(200).send({ success: true, code: 200, bootcamp });
 });
+
+
 //@desc    Get  bootcamp within a radius
 //@route   GET /api/v1/bootcamps/radius/:zipcode/:distance
 //@access  Public
@@ -50,15 +53,17 @@ module.exports.getBootcampsInRadius = asyncHandler(async (req, res, next) => {
     .send({ success: true, count: bootcamps.length, code: 200, bootcamps });
 });
 
+
+
 //@desc     Create  bootcamp
 //@route    POST /api/v1/bootcamps
 //@access   Private
 module.exports.createBootcamp = asyncHandler(async (req, res, next) => {
-  const publishedBootcamp = await Bootcamp.find({ user: req.user._id })
+  const publishedBootcamp = await Bootcamp.findOne({ user: req.user._id })
+  // console.log("Afd", publishedBootcamp)
   if (publishedBootcamp && req.user.role !== 'admin') {
-    return res.status(400).status({ success: true, code: 400, message: `you can add only one Bootcamp with this id ${req.user._id}` })
+    return res.status(400).send({ success: true, code: 400, message: `you can add only one Bootcamp with this id ${req.user._id}` })
   }
-
   let bootcamp = new Bootcamp({
     name: req.body.name,
     description: req.body.description,
@@ -73,32 +78,36 @@ module.exports.createBootcamp = asyncHandler(async (req, res, next) => {
     user: req.user._id
   });
   bootcamp = await bootcamp.save();
-
   res
     .status(201)
     .send({ success: true, message: "created new bootcamp", data: bootcamp });
 });
 
+
+
 //@desc    update  bootcamps
 //@route   PUT /api/v1/bootcamps/:id
 //@access  Public
 module.exports.updateBootcamp = asyncHandler(async (req, res, next) => {
-  let bootcamp = await Bootcamp.findById(req.params.id, req.body)
+  let bootcamp = await Bootcamp.findById(req.params.id)
   if (!bootcamp)
     return res
       .status(404)
-      .send({ success: false, code: 404, message: "not found" });
+      .send({ success: false, code: 404, message: "bootcamp not found" });
 
-  //make sure that user is bootcamp owner
-  if (bootcamp.user.toSring() !== req.user.id && req.user.role !== 'admin') {
-    return res.status(401).send({ success: true, code: 401, message: 'nt authorized to update thid bootcamp' });
+  // make sure user is bootcamp owner
+  const x = bootcamp.user.toString();
+  const y = req.user._id.toString();
+
+  if (x !== y && req.user.role.toString() !== 'admin') {
+    return res.status(401).send({ success: false, code: 401, message: `${req.user._id} not authorize to update this bootcamp` })
   }
+
 
   bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true
   });
-
   res.status(200).send({ success: true, code: 200, data: bootcamp });
 });
 
@@ -107,10 +116,20 @@ module.exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 //@access  Private
 module.exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
   const bootcamp = await Bootcamp.findById(req.params.id);
+
   if (!bootcamp)
     return res
       .status(404)
       .send({ success: false, code: 404, message: "bootcamp not found" });
+
+  const x = bootcamp.user.toString();
+  const y = req.user._id.toString();
+
+  if (x !== y && req.user.role.toString() !== 'admin') {
+    return res.status(401).send({ success: false, code: 401, message: `${req.user._id} not authorize to delete this bootcamp` })
+  }
+
+
 
   const courses = await Course.deleteMany({ bootcamp: bootcamp._id });
   console.log(courses)
@@ -132,6 +151,14 @@ module.exports.bootcampPhotoUpload = asyncHandler(async (req, res, next) => {
   const bootcamp = await Bootcamp.findById(req.params.id);
   if (!bootcamp)
     return res.status(404).send({ success: false, code: 404, message: "bootcamp not found" });
+
+  const x = bootcamp.user.toString();
+  const y = req.user._id.toString();
+
+  if (x !== y && req.user.role.toString() !== 'admin') {
+    return res.status(401).send({ success: false, code: 401, message: `${req.user._id} not authorize to update photo of this bootcamp` })
+  }
+
   const fileName = req.file.fileName;
   await Bootcamp.findByIdAndUpdate(req.params.id, { photo: fileName }, {
     new: true,

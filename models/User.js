@@ -17,7 +17,7 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'publisher'],
+    enum: ['user', 'publisher', 'admin'],
     default: 'user'
   }
   ,
@@ -25,7 +25,7 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Please add a password'],
-    minlength: 6,
+    minlength: 5,
 
   },
   resetPasswordToken: String,

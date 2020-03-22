@@ -30,7 +30,7 @@ module.exports.registerUser = asyncHandler(async (req, res, next) => {
   const token = user.generateAuthToken()
   user.token = token
   user = await user.save()
-  res.status(200).send({ succuss: false, code: 201, message: 'user register', user: _.pick(user, ["_id", "email", "name", "token", "createdAt", "role"]) })
+  res.status(201).send({ succuss: true, code: 201, message: 'user register', user: _.pick(user, ["_id", "email", "name", "token", "createdAt", "role"]) })
 
 })
 
@@ -98,7 +98,7 @@ module.exports.forgotPassword = asyncHandler(async (req, res, next) => {
 module.exports.resetPassword = asyncHandler(async (req, res, next) => {
   if (!req.body.oldPassword || !req.body.newPassword) {
     return res.status(400).send({ success: false, code: 400, message: ' please add oldPassword field and newPassword field' })
-  } else if (req.body.oldPassword.length < 6 || req.body.newPassword.length < 6) {
+  } else if (req.body.oldPassword.length < 5 || req.body.newPassword.length < 5) {
     return res.status(400).send({ success: false, code: 400, message: 'oldPassword ,newPassword length of atleast 6 characters ' })
   }
   console.log(req.user._id)
