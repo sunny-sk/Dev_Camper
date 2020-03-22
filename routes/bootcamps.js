@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const courseRouter = require("./courses");
+const reviewRouter = require('./reviews')
 
 const {
   getAllBootcamps,
@@ -18,6 +19,7 @@ const { protect, authorize } = require('../middleware/auth')
 
 const { mySingleUpload } = require('../middleware/uploadImage')
 router.use("/:id/courses", courseRouter);
+router.use("/:id/reviews", reviewRouter);
 router.get("/", getAllBootcamps);
 router.get("/:radius/:zipcode/:distance", getBootcampsInRadius);
 router.get("/:id", getBootcamp);
