@@ -19,7 +19,6 @@ const ReviewSchema = new mongoose.Schema({
     min: 1,
     max: 10,
     required: [true, "Please add a rating between 1 to 10"]
-
   },
 
   createdAt: {
@@ -38,7 +37,8 @@ const ReviewSchema = new mongoose.Schema({
   }
 });
 
-
+//one user one review per bootcamp
+ReviewSchema.index({ bootcamp: 1, user: 1 }, { unique: true });
 
 const Review = mongoose.model("Review", ReviewSchema);
 module.exports = Review;

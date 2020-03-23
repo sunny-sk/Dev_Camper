@@ -7,5 +7,4 @@ const connectDB = async () => {
       .underline
   );
 };
-
 module.exports = connectDB;

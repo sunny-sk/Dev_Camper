@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const courseRouter = require("./courses");
-const reviewRouter = require('./reviews')
+const reviewRouter = require("./reviews");
 
 const {
   getAllBootcamps,
@@ -14,19 +14,24 @@ const {
   bootcampPhotoUpload
 } = require("../controller/bootcamps");
 
-const { protect, authorize } = require('../middleware/auth')
+const { protect, authorize } = require("../middleware/auth");
 
-
-const { mySingleUpload } = require('../middleware/uploadImage')
+const { mySingleUpload } = require("../middleware/uploadImage");
 router.use("/:id/courses", courseRouter);
 router.use("/:id/reviews", reviewRouter);
 router.get("/", getAllBootcamps);
 router.get("/:radius/:zipcode/:distance", getBootcampsInRadius);
 router.get("/:id", getBootcamp);
-router.post("/", protect, authorize('publisher', 'admin'), createBootcamp);
-router.put("/:id", protect, authorize('publisher', 'admin'), updateBootcamp);
+router.post("/", protect, authorize("publisher", "admin"), createBootcamp);
+router.put("/:id", protect, authorize("publisher", "admin"), updateBootcamp);
 
-router.put("/:id/photo", protect, authorize('publisher', 'admin'), mySingleUpload, bootcampPhotoUpload);
-router.delete("/:id", protect, authorize('publisher', 'admin'), deleteBootcamp);
+router.put(
+  "/:id/photo",
+  protect,
+  authorize("publisher", "admin"),
+  mySingleUpload,
+  bootcampPhotoUpload
+);
+router.delete("/:id", protect, authorize("publisher", "admin"), deleteBootcamp);
 
 module.exports = router;
